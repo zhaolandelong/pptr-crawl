@@ -40,61 +40,60 @@ const takeOverviewSS = async (page) => {
       height: 870,
     },
   });
-};
-
-const takeFansSS = async (page) => {
-  await page.goto(
-    `${DOUYIN_DOMAIN}/creator-micro/data/stats/follower/portrait`
-  );
-  await page.waitForTimeout(1000);
   await page.screenshot({
-    path: "fans.png",
+    path: "overview.png",
     clip: {
-      x: 480,
-      y: 130,
-      width: 895,
-      height: 950,
+      x: 460,
+      y: 110,
+      width: 870,
+      height: 870,
     },
   });
 };
 
 (async () => {
-  const browser = await puppeteer.launch({
-    executablePath,
-    headless: false,
+  const browser = await puppeteer.connect({
+    browserWSEndpoint:
+      "ws://127.0.0.1:32935/devtools/browser/674c95ce-1923-4ec6-986f-cdbc324fbc87",
     defaultViewport,
-    args: ["--start-maximized"],
   });
-  console.log("Browser wsEndpoint is: ", browser.wsEndpoint());
-  const page = await browser.newPage();
-  await page.goto(DOUYIN_DOMAIN);
-  await waitClickSelector(page, ".login");
-  await waitClickSelector(page, ".semi-button-primary");
-  if (loginBySMS) {
-    await waitClickSelector(page, ".semi-tabs-tab[aria-selected=false]");
-    await page.type(".semi-input-large", phone);
-    await waitClickSelector(page, ".agreement>img");
-    await waitClickSelector(page, ".semi-input-suffix");
-  }
-
-  // goto home page
-  await page.waitForNavigation({ timeout: 0 });
-  // start modal
-  await waitClickSelector(page, ".semi-modal-body>button");
-  // guide
-  await waitClickSelector(page, "#root");
-  await waitClickSelector(page, "#root");
-
-  // overview screenshot
+  const page = (await browser.pages())[1];
   await takeOverviewSS(page);
-  // fans screenshot
-  await takeFansSS(page);
+  // await page.$eval(".analyse", (el) => {
+  //   el.style.marginBottom = 0;
+  //   el.style.padding = 0;
+  // });
+  // await page.$eval(".analyse+div", (el) => {
+  //   el.style.padding = 0;
+  // });
+  // await page.$eval("#micro", (el) => {
+  //   el.style.width = "870px";
+  // });
+  // await page.$eval(".semi-portal", (el) => {
+  //   el.style.display = "none";
+  // });
+  // await page.screenshot({
+  //   path: "overview.png",
+  //   clip: {
+  //     x: 460,
+  //     y: 110,
+  //     width: 870,
+  //     height: 870,
+  //   },
+  // });
   return;
-  // videos screenshot
-  await page.goto(`${DOUYIN_DOMAIN}/creator-micro/data/stats/video`);
+  await page.goto(
+    "https://creator.douyin.com/creator-micro/data/stats/overview"
+  );
+  console.log(1);
+  // await page.waitForResponse(
+  //   "https://creator.douyin.com/aweme/v1/creator/data/overview/option/"
+  // );
+  await page.waitForSelector("canvas");
+  console.log(2);
   await page.waitForTimeout(1000);
   await page.screenshot({
-    path: "videos.png",
+    path: "overview.png",
     clip: {
       x: 480,
       y: 130,
@@ -103,6 +102,5 @@ const takeFansSS = async (page) => {
     },
   });
 
-  // DOU+
-  await page.goto(`${DOUJIA_DOMAIN}/login`);
+  // await browser.close();
 })();
