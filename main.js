@@ -1,13 +1,15 @@
 const puppeteer = require("puppeteer-core");
+const moment = require("moment");
 const executablePath = "/usr/bin/google-chrome";
 const defaultViewport = {
   width: 1600,
   height: 900,
 };
-const loginBySMS = true;
+const loginBySMS = false;
 const phone = "15810538391";
 const DOUYIN_DOMAIN = "https://creator.douyin.com";
 const DOUJIA_DOMAIN = "https://doujia.douyin.com";
+const DATE_PREV = moment().format("YYMMDD");
 
 const waitClickSelector = async (page, selector) => {
   await page.waitForSelector(selector);
@@ -15,7 +17,9 @@ const waitClickSelector = async (page, selector) => {
 };
 
 const takeOverviewSS = async (page) => {
-  await page.goto(`${DOUYIN_DOMAIN}/creator-micro/data/stats/overview`);
+  const path = await page.goto(
+    `${DOUYIN_DOMAIN}/creator-micro/data/stats/overview`
+  );
   await page.waitForSelector("canvas");
   await page.waitForTimeout(1000);
   await page.$eval(".analyse", (el) => {
@@ -32,12 +36,12 @@ const takeOverviewSS = async (page) => {
     el.style.display = "none";
   });
   await page.screenshot({
-    path: "overview.png",
+    path: `${DATE_PREV}-overview.png`,
     clip: {
-      x: 460,
-      y: 110,
-      width: 870,
-      height: 870,
+      x: 455,
+      y: 105,
+      width: 880,
+      height: 880,
     },
   });
 };

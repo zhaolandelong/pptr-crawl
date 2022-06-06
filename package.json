@@ -4,6 +4,7 @@
   "description": "",
   "main": "main.js",
   "dependencies": {
+    "moment": "^2.29.3",
     "node-fetch": "^3.2.4",
     "puppeteer-core": "^14.1.1",
     "qs": "^6.10.3"
