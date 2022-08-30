@@ -6,7 +6,7 @@ const defaultViewport = {
   height: 900,
 };
 const loginBySMS = false;
-const phone = "15810538391";
+const phone = "";
 const DOUYIN_DOMAIN = "https://creator.douyin.com";
 const DOUJIA_DOMAIN = "https://doujia.douyin.com";
 const DATE_PREV = moment().format("YYMMDD");
