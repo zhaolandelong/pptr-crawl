@@ -1,13 +1,8 @@
 const puppeteer = require("puppeteer-core");
 const createCsvWriter = require("csv-writer").createObjectCsvWriter;
 const path = require("path");
+const { browserWSEndpoint } = require("../../tmp.json");
 
-const browserWSEndpoint =
-  "ws://127.0.0.1:37665/devtools/browser/df5d130f-f3ab-4574-8b5d-76a22c919dc2";
-const defaultViewport = {
-  width: 1600,
-  height: 900,
-};
 const START_INDEX = 1;
 
 const waitClickSelector = async (page, selector) => {
@@ -20,7 +15,10 @@ const delay = async (ms) => new Promise((rev) => setTimeout(() => rev(), ms));
 (async () => {
   const browser = await puppeteer.connect({
     browserWSEndpoint,
-    defaultViewport,
+    defaultViewport: {
+      width: 1600,
+      height: 900,
+    },
   });
   const page = (await browser.pages())[0];
 
@@ -45,7 +43,10 @@ const delay = async (ms) => new Promise((rev) => setTimeout(() => rev(), ms));
   while (i < len) {
     navs = await page.$$(".list-item-wrapper");
     len = navs.length;
-    const title = await navs[i].$eval(".tree-node-wrapper", (ele) => ele.innerText);
+    const title = await navs[i].$eval(
+      ".tree-node-wrapper",
+      (ele) => ele.innerText
+    );
     await navs[i].click();
     await delay(200);
     await navs[i].click();
