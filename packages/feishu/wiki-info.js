@@ -66,10 +66,10 @@ const delay = async (ms) => new Promise((rev) => setTimeout(() => rev(), ms));
     );
 
     if (items.length === 3) {
-      // sheet
+      // sheets、mindnotes、bitable
       [uv, pv, comments] = items;
     } else {
-      // doc
+      // docs
       [words, chars, uv, pv, like, comments] = items;
     }
 
@@ -89,4 +89,5 @@ const delay = async (ms) => new Promise((rev) => setTimeout(() => rev(), ms));
     await page.keyboard.press("Escape");
     i++;
   }
+  await browser.disconnect();
 })();
