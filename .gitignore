@@ -118,3 +118,4 @@ dist
 config.js
 *.png
 tmp.json
+*.csv

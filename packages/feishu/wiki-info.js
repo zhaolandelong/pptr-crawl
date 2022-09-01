@@ -1,16 +1,10 @@
 const puppeteer = require("puppeteer-core");
 const createCsvWriter = require("csv-writer").createObjectCsvWriter;
 const path = require("path");
+const { waitClickSelector, delay } = require("../../utils");
 const { browserWSEndpoint } = require("../../tmp.json");
 
 const START_INDEX = 1;
-
-const waitClickSelector = async (page, selector) => {
-  await page.waitForSelector(selector);
-  await page.click(selector);
-};
-
-const delay = async (ms) => new Promise((rev) => setTimeout(() => rev(), ms));
 
 (async () => {
   const browser = await puppeteer.connect({
