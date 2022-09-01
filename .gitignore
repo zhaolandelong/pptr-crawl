@@ -119,3 +119,4 @@ config.js
 *.png
 tmp.json
 *.csv
+packages/**/config.json
