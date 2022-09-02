@@ -4,6 +4,7 @@ const { delay, clearAndInput, waitClickSelector } = require("../../utils");
 const { buy, sell, getToken, login } = require("./utils");
 
 (async () => {
+  console.log("Time is:", Date());
   const browser = await puppeteer.connect({
     browserWSEndpoint,
     defaultViewport: {
@@ -13,18 +14,25 @@ const { buy, sell, getToken, login } = require("./utils");
   });
   const page = (await browser.pages())[0];
 
-  const token = await getToken(page);
+  while (true) {
+    await page.goto("https://xtrade.newone.com.cn/npctrade#/trade/ptjy/mm");
+    await delay(60000);
+    await page.goto("https://xtrade.newone.com.cn/npctrade#/trade/ptjy/zjgf");
+    await delay(60000);
+  }
 
-  const res = await sell(page, token, {
-    zqdm: "600703",
-    // zqdm: "000063",
-    wtsl: 100,
-    wtjg: 12.5,
-    sjwtbz: 0,
-  });
-  console.log(res);
+  // const token = await getToken(page);
 
-  // await login(page, browser);
+  // const res = await sell(page, token, {
+  //   zqdm: "600703",
+  //   // zqdm: "000063",
+  //   wtsl: 100,
+  //   wtjg: 12.5,
+  //   sjwtbz: 0,
+  // });
+  // console.log(res);
+
+  // await login(page);
 
   await browser.disconnect();
 })();

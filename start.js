@@ -1,17 +1,20 @@
 const fs = require("fs");
+const os = require("os");
 const path = require("path");
 const puppeteer = require("puppeteer-core");
-const { executablePath } = require("./config.json");
 
 (async () => {
   const browser = await puppeteer.launch({
-    executablePath,
+    executablePath:
+      os.platform() === "linux"
+        ? "/usr/bin/google-chrome"
+        : "C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe",
     headless: false,
     args: ["--start-maximized"],
   });
   console.log("Browser wsEndpoint is: ", browser.wsEndpoint());
   fs.writeFileSync(
-    path.resolve(__dirname,'tmp.json'),
+    path.resolve(__dirname, "tmp.json"),
     JSON.stringify(
       {
         browserWSEndpoint: browser.wsEndpoint(),
