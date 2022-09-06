@@ -1,5 +1,7 @@
+const inquirer = require('inquirer');
+const path = require('path');
 const config = require("./config.json");
-const { getCookie } = require("../../utils");
+const { getCookie, delay, clearAndInput } = require("../../utils");
 /**
  *
  * @param {*} type 1-sell，2-buy
@@ -83,9 +85,40 @@ exports.getToken = (page) => getCookie(page, "cms_token");
 exports.login = async (page) => {
   await page.goto("https://xtrade.newone.com.cn/ssologin");
   await page.waitForSelector(".vcode-btn");
+  await page.screenshot({
+    path: path.resolve(__dirname, 'vcode-img.png'),
+    clip: {
+      x: 1350,
+      y: 310,
+      width: 150,
+      height: 80,
+    },
+  });
   const inputs = await page.$$("input");
-  await inputs[0].type(config.id);
-  await inputs[1].type(config.pswd);
-  await inputs[3].type(config.phone);
+  await clearAndInput(page, inputs[0], config.id)
+  await clearAndInput(page, inputs[1], config.pswd)
+  await clearAndInput(page, inputs[3], config.phone)
   await page.click(".vcode-btn");
+  const answers = await inquirer.prompt([{
+    type: 'input',
+    name: 'vcode',
+    message: "Vcode: "
+  },{
+    type: 'input',
+    name: 'sms',
+    message: "Sms: "
+  }]);
+  await inputs[2].type(answers.vcode);
+  await inputs[4].type(answers.sms);
+  await page.click(".login-btn");
+  await delay(5000);
+  await page.screenshot({
+    path: path.resolve(__dirname, 'check.png'),
+    clip: {
+      x: 0,
+      y: 0,
+      width: 1600,
+      height: 900,
+    },
+  });
 };

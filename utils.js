@@ -10,7 +10,7 @@ exports.clearAndInput = async (page, selector, text) => {
   await page.keyboard.down("Control");
   await page.keyboard.press("KeyA");
   await page.keyboard.up("Control");
-  await selector.type(text, { delay: 10 });
+  await selector.type(text);
 };
 
 exports.getCookie = async (page, key) => {
