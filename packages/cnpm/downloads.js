@@ -15,8 +15,14 @@ const totalDownloads = (arr) =>
     return prev + curr.downloads;
   }, 0);
 
-const downloadsPromise = (name, range) => {
+const downloadsPromise = (name, platform='cnpm', range) => {
   let rangeStr; // YYYY-MM-DD:YYYY-MM-DD
+  let host = 'registry.npmmirror.com'
+  let apiPath = '/downloads/range'
+  if (platform == 'npm') {
+    host = 'api.npmjs.org'
+    apiPath = '/downloads/point'
+  }
   if (range) {
     rangeStr = range;
   } else {
@@ -30,8 +36,8 @@ const downloadsPromise = (name, range) => {
     https
       .request(
         {
-          host: "registry.npmmirror.com",
-          path: `/downloads/range/${rangeStr}/${name}`,
+          host,
+          path: `${apiPath}/${rangeStr}/${name}`,
         },
         (response) => {
           let str = "";
@@ -58,10 +64,15 @@ const downloadsPromise = (name, range) => {
 const getPackagesDownloads = (pkgs) => {
   const result = {};
   return Promise.all(
-    pkgs.map((pkg) =>
-      downloadsPromise(pkg).then((res) => {
-        result[pkg] = totalDownloads(parseDownloadsData(res));
-      })
+    pkgs.map((pkg) => Promise.all([
+      downloadsPromise(pkg, 'cnpm'),
+      downloadsPromise(pkg, 'npm')
+    ]).then(resArr=> {
+      result[pkg] = {
+        cnpm: totalDownloads(parseDownloadsData(resArr[0])),
+        npm: parseDownloadsData(resArr[1])
+      }
+    })
     )
   ).then(() => result);
 };
@@ -71,7 +82,13 @@ const getPackagesDownloads = (pkgs) => {
  *
 getPackagesDownloads(["react", "vue", "@angular/core", "angular"]).then(
   (res) => {
-    console.log(res); // { vue: 17856466, react: 41737825 }
+    console.log(res);
+    // {
+    //   angular: { cnpm: 75264, npm: 26791859 },
+    //   vue: { cnpm: 17878348, npm: 163975718 },
+    //   '@angular/core': { cnpm: 730528, npm: 151297959 },
+    //   react: { cnpm: 41750961, npm: 779385565 }
+    // }
   }
 );
  * 
