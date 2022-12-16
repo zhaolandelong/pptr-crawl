@@ -16,16 +16,5 @@ const { activityOrder } = require("./utils");
 
   await activityOrder(page);
 
-  // while (true) {
-  //   await page.goto("https://xtrade.newone.com.cn/npctrade#/trade/ptjy/mm");
-  //   await delay(60000);
-  //   await page.goto("https://xtrade.newone.com.cn/npctrade#/trade/ptjy/zjgf");
-  //   await delay(60000);
-  // }
-
-  // const token = await getToken(page);
-
-  
-
   await browser.disconnect();
 })();

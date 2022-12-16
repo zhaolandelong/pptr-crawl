@@ -9,7 +9,7 @@ exports.login = async (page) => {
   await page.goto("https://edu.xlzhao.com/new-login/login");
   await page.waitForSelector(".loginBtn");
   const inputs = await page.$$(".el-input__inner");
-  await clearAndInput(page, inputs[1], "15810538391");
+  await clearAndInput(page, inputs[1], "");
   await page.click(".loginBtn");
 };
 
