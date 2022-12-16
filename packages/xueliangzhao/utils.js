@@ -31,7 +31,6 @@ exports.orderExport = async (page) => {
 
   // 导出类型选择
   const filterLabels = await (await page.$$(".publicScreenLi"))[0].$$("li");
-  console.log(filterLabels.length);
   for (let i = 0; i < typeLabels.length; i++) {
     await filterLabels[typeLabels[i]].click();
   }
@@ -95,9 +94,31 @@ exports.bindingExport = async (page) => {
   await page.keyboard.type(getDate());
   await page.keyboard.press("Enter");
 
-  await page.click(".exportBtn>button");
-
   // 全部
+  await page.click(".exportBtn>button");
+  await page.waitForSelector(".couponAlert");
+  await page.click(".fieldCon>label");
+  const alertBtns = await page.$$(".couponAlert button");
+  await alertBtns[1].click();
+};
+
+exports.activityOrder = async (page) => {
+  const id = "2381";
+  const stageIndex = 2;
+  await page.goto(`https://edu.xlzhao.com/activity/export-order?id=${id}`);
+  await Promise.all([
+    waitPathResponse(page, "/api/mechanismapi/teacher_stage/api_list"),
+    waitPathResponse(page, "/api/mechanismapi/teacher_class_type/api_list"),
+    waitPathResponse(
+      page,
+      "/api/mechanismapi/order/data/export/index/activityOrder"
+    ),
+  ]);
+
+  const filterStages = await page.$$("#stageId>li");
+  await filterStages[stageIndex].click();
+
+  await page.click(".exportBtn>button");
   await page.waitForSelector(".couponAlert");
   await page.click(".fieldCon>label");
   const alertBtns = await page.$$(".couponAlert button");
