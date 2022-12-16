@@ -1,5 +1,5 @@
 const {
-  getCookie,
+  getDate,
   delay,
   clearAndInput,
   waitPathResponse,
@@ -72,6 +72,30 @@ exports.orderTrim = async (page) => {
   await page.keyboard.press("Enter");
 
   await page.click(".publicInputBtn button");
+
+  // 全部
+  await page.waitForSelector(".couponAlert");
+  await page.click(".fieldCon>label");
+  const alertBtns = await page.$$(".couponAlert button");
+  await alertBtns[1].click();
+};
+
+exports.bindingExport = async (page) => {
+  await page.goto("https://edu.xlzhao.com/nexus/binding-export");
+  await waitPathResponse(
+    page,
+    "/api/mechanismapi/order/data/export/index/binDing"
+  );
+
+  // 绑定时间
+  const timeInputs = await page.$$(".el-range-input");
+  await timeInputs[0].focus();
+  await page.keyboard.type("2021-7-1");
+  await timeInputs[1].focus();
+  await page.keyboard.type(getDate());
+  await page.keyboard.press("Enter");
+
+  await page.click(".exportBtn>button");
 
   // 全部
   await page.waitForSelector(".couponAlert");

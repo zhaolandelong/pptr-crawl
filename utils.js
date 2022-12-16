@@ -25,3 +25,8 @@ exports.getCookie = async (page, key) => {
   );
   return obj ? obj.value : "";
 };
+
+exports.getDate = () => {
+  const t = new Date();
+  return `${t.getFullYear()}-${t.getMonth() + 1}-${t.getDate()}`;
+};
