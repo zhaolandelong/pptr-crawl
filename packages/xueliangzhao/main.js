@@ -1,7 +1,7 @@
 const puppeteer = require("puppeteer-core");
 const { browserWSEndpoint } = require("../../tmp.json");
 const { delay, clearAndInput, waitClickSelector } = require("../../utils");
-const { orderExport } = require("./utils");
+const { orderTrim } = require("./utils");
 
 (async () => {
   console.log("Time is:", Date());
@@ -14,7 +14,7 @@ const { orderExport } = require("./utils");
   });
   const page = (await browser.pages())[0];
 
-  await orderExport(page);
+  await orderTrim(page);
 
   // while (true) {
   //   await page.goto("https://xtrade.newone.com.cn/npctrade#/trade/ptjy/mm");

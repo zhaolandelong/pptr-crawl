@@ -1,4 +1,9 @@
-const { getCookie, delay, clearAndInput } = require("../../utils");
+const {
+  getCookie,
+  delay,
+  clearAndInput,
+  waitPathResponse,
+} = require("../../utils");
 
 exports.login = async (page) => {
   await page.goto("https://edu.xlzhao.com/new-login/login");
@@ -16,11 +21,10 @@ exports.orderExport = async (page) => {
   await page.goto("https://edu.xlzhao.com/student/order-export");
 
   await Promise.all([
-    page.waitForResponse(
-      "https://i.xlzhao.com/api/mechanismapi/order/data/export/tag"
-    ),
-    page.waitForResponse(
-      "https://i.xlzhao.com/api/mechanismapi/shop_api_list/agent_administrator_list"
+    waitPathResponse(page, "/api/mechanismapi/order/data/export/tag"),
+    waitPathResponse(
+      page,
+      "/api/mechanismapi/shop_api_list/agent_administrator_list"
     ),
   ]);
   await delay(100);
@@ -38,12 +42,39 @@ exports.orderExport = async (page) => {
   await page.keyboard.type(timeRange[0]);
   await timeInputs[1].focus();
   await page.keyboard.type(timeRange[1]);
-  await page.keyboard.type("Enter");
+  await page.keyboard.press("Enter");
 
   // 导出按钮
   await page.click("span.dis_inB");
 
   // 全部
+  await page.click(".fieldCon>label");
+  const alertBtns = await page.$$(".couponAlert button");
+  await alertBtns[1].click();
+};
+
+// 调整订单
+exports.orderTrim = async (page) => {
+  const timeRange = ["2022-12-15", "2022-12-15"];
+
+  await page.goto("https://edu.xlzhao.com/student/order-trim-export");
+  await waitPathResponse(
+    page,
+    "/api/mechanismapi/order/data/export/index/adjustment"
+  );
+
+  // 导出时间
+  const timeInputs = await page.$$(".el-range-input");
+  await timeInputs[0].focus();
+  await page.keyboard.type(timeRange[0]);
+  await timeInputs[1].focus();
+  await page.keyboard.type(timeRange[1]);
+  await page.keyboard.press("Enter");
+
+  await page.click(".publicInputBtn button");
+
+  // 全部
+  await page.waitForSelector(".couponAlert");
   await page.click(".fieldCon>label");
   const alertBtns = await page.$$(".couponAlert button");
   await alertBtns[1].click();

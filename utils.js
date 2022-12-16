@@ -3,6 +3,12 @@ exports.waitClickSelector = async (page, selector) => {
   await page.click(selector);
 };
 
+exports.waitPathResponse = async (page, path) => {
+  await page.waitForResponse(
+    (response) => response.url().includes(path) && response.status() === 200
+  );
+};
+
 exports.delay = async (ms) => new Promise((rev) => setTimeout(() => rev(), ms));
 
 exports.clearAndInput = async (page, selector, text) => {
