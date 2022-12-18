@@ -119,4 +119,6 @@ config.js
 *.png
 tmp.json
 *.csv
+*.xls
+*.xlsx
 packages/**/config.json

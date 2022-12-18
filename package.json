@@ -4,6 +4,7 @@
   "description": "",
   "main": "main.js",
   "dependencies": {
+    "@aternus/csv-to-xlsx": "^2.0.3",
     "csv-writer": "^1.6.0",
     "inquirer": "^8.2.4",
     "moment": "^2.29.3",
