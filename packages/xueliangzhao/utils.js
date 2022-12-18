@@ -1,8 +1,10 @@
+const moment = require("moment");
 const {
-  getDate,
   delay,
   clearAndInput,
   waitPathResponse,
+  serviceDownload,
+  csv2xlsx,
 } = require("../../utils");
 
 exports.login = async (page) => {
@@ -91,7 +93,7 @@ exports.bindingExport = async (page) => {
   await timeInputs[0].focus();
   await page.keyboard.type("2021-7-1");
   await timeInputs[1].focus();
-  await page.keyboard.type(getDate());
+  await page.keyboard.type(moment().format("YYYY-MM-DD"));
   await page.keyboard.press("Enter");
 
   // 全部
@@ -123,4 +125,21 @@ exports.activityOrder = async (page) => {
   await page.click(".fieldCon>label");
   const alertBtns = await page.$$(".couponAlert button");
   await alertBtns[1].click();
+};
+
+exports.downloadOrderAndConvert = async (page) => {
+  const pageUrl = "https://edu.xlzhao.com/student/order-export";
+  const resUrl = "/api/mechanismapi/order/data/export/index/order";
+  const filePath = `./order_${moment().format("YYMMDDHHmm")}.csv`;
+  await page.goto(pageUrl);
+
+  const res = await waitPathResponse(page, resUrl);
+
+  const data = await res.json();
+
+  const file_url = data.data.data[0].file_url;
+
+  await serviceDownload(file_url, filePath);
+
+  csv2xlsx(filePath);
 };
