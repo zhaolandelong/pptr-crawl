@@ -30,11 +30,6 @@ exports.getCookie = async (page, key) => {
   return obj ? obj.value : "";
 };
 
-exports.getDate = () => {
-  const t = new Date();
-  return `${t.getFullYear()}-${t.getMonth() + 1}-${t.getDate()}`;
-};
-
 exports.serviceDownload = (url, dist) => {
   const service = url.startsWith("https:") ? https : http;
   return new Promise((rev, rej) => {

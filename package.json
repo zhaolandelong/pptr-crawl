@@ -7,7 +7,7 @@
     "@aternus/csv-to-xlsx": "^2.0.3",
     "csv-writer": "^1.6.0",
     "inquirer": "^8.2.4",
-    "moment": "^2.29.3",
+    "moment": "^2.29.4",
     "node-fetch": "^3.2.4",
     "puppeteer-core": "^14.1.1",
     "qs": "^6.10.3"
