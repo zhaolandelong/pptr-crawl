@@ -1,4 +1,6 @@
 const fs = require("fs");
+const os = require("os");
+const rl = require("readline");
 const http = require("http");
 const https = require("https");
 const { convertCsvToXlsx } = require("@aternus/csv-to-xlsx");
@@ -35,7 +37,7 @@ exports.serviceDownload = (url, dist) => {
   return new Promise((rev, rej) => {
     service
       .get(url, (res) => {
-        const file = fs.createWriteStream(dist);
+        const file = fs.createWriteStream(dist, "utf-8");
         // Write data into local file
         res.pipe(file);
         // Close the file
@@ -60,3 +62,21 @@ exports.csv2xlsx = (source, dist) => {
   }
   convertCsvToXlsx(source, _dist);
 };
+
+exports.readWriteFileByLineWithProcess = (readName, writeName, callback) =>
+  new Promise((rev) => {
+    const readStream = fs.createReadStream(readName);
+    const writeStream = fs.createWriteStream(writeName);
+    const readLine = rl.createInterface({
+      input: readStream,
+    });
+    let i = 0;
+    readLine.on("line", (line) => {
+      const rs = callback(line, i);
+      i += 1;
+      writeStream.write(rs + os.EOL);
+    });
+    readLine.on("close", function (line) {
+      rev(1);
+    });
+  });

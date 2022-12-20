@@ -1,7 +1,7 @@
 const puppeteer = require("puppeteer-core");
 const { browserWSEndpoint } = require("../../tmp.json");
 const { delay, clearAndInput, waitClickSelector } = require("../../utils");
-const { orderExportAndDownload } = require("./utils");
+const { bindingExportAndDownload } = require("./utils");
 
 (async () => {
   console.log("Time is:", Date());
@@ -14,7 +14,7 @@ const { orderExportAndDownload } = require("./utils");
   });
   const page = (await browser.pages())[0];
 
-  await orderExportAndDownload(page);
+  await bindingExportAndDownload(page);
 
   await browser.disconnect();
 })();
