@@ -10,8 +10,8 @@ const puppeteer = require("puppeteer-core");
       os.platform() === "linux"
         ? "/usr/bin/google-chrome"
         : "C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe",
-    headless: true,
-    args: ["--start-maximized", "--no-sandbox"],
+    headless: false,
+    args: ["--start-maximized", "--no-sandbox", "--disable-web-security"],
   });
   console.log("Browser wsEndpoint is: ", browser.wsEndpoint());
   fs.writeFileSync(

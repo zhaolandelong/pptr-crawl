@@ -34,18 +34,22 @@ exports.serviceDownload = (url, dist) => {
   const service = url.startsWith("https:") ? https : http;
   return new Promise((rev, rej) => {
     service
-      .request(url, (res) => {
-        res.pipe(fs.createWriteStream(dist));
-
-        res.on("end", () => {
+      .get(url, (res) => {
+        const file = fs.createWriteStream(dist);
+        // Write data into local file
+        res.pipe(file);
+        // Close the file
+        file.on("finish", () => {
+          file.close();
           rev(dist);
         });
 
-        res.on("error", (err) => {
-          rej(err);
-        });
+        // res.pipe(fs.createWriteStream(dist));
       })
-      .end();
+      .on("error", (err) => {
+        rej(err);
+        console.log("Error: ", err.message);
+      });
   });
 };
 

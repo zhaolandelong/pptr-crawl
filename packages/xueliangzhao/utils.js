@@ -1,4 +1,5 @@
 const moment = require("moment");
+const download = require("download");
 const {
   delay,
   clearAndInput,
@@ -15,9 +16,12 @@ exports.login = async (page) => {
   await page.click(".loginBtn");
 };
 
-// 订单导出
-exports.orderExport = async (page) => {
-  const timeRange = ["2022-12-15", "2022-12-15"];
+// 导出订单并下载
+exports.orderExportAndDownload = async (
+  page,
+  timeRange = [moment().format("YYYY-MM-DD"), moment().format("YYYY-MM-DD")]
+) => {
+  const filePath = `./order_${timeRange.join("_").replaceAll("-", "")}.csv`;
   const typeLabels = [0];
 
   await page.goto("https://edu.xlzhao.com/student/order-export");
@@ -52,6 +56,29 @@ exports.orderExport = async (page) => {
   await page.click(".fieldCon>label");
   const alertBtns = await page.$$(".couponAlert button");
   await alertBtns[1].click();
+
+  let canDownload = false;
+  const pageBtns = await page.$$(".pagination_page");
+
+  let fileUrl;
+  while (!canDownload) {
+    await pageBtns[3].click();
+    await delay(2000);
+    await pageBtns[2].click();
+    const res = await waitPathResponse(
+      page,
+      "/api/mechanismapi/order/data/export/index/order"
+    );
+    const data = await res.json();
+    if (data.data.data[0].status === 1) {
+      canDownload = true;
+      fileUrl = data.data.data[0].file_url;
+    }
+  }
+
+  await serviceDownload(fileUrl, filePath);
+
+  csv2xlsx(filePath);
 };
 
 // 调整订单
@@ -131,13 +158,18 @@ exports.downloadOrderAndConvert = async (page) => {
   const pageUrl = "https://edu.xlzhao.com/student/order-export";
   const resUrl = "/api/mechanismapi/order/data/export/index/order";
   const filePath = `./order_${moment().format("YYMMDDHHmm")}.csv`;
-  await page.goto(pageUrl);
 
-  const res = await waitPathResponse(page, resUrl);
+  const [, res] = await Promise.all([
+    page.goto(pageUrl),
+    waitPathResponse(page, resUrl),
+  ]);
+  // await page.goto(pageUrl);
+
+  // const res = await waitPathResponse(page, resUrl);
 
   const data = await res.json();
 
-  const file_url = data.data.data[0].file_url;
+  const file_url = data.data.data[2].file_url;
 
   await serviceDownload(file_url, filePath);
 
