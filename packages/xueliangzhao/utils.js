@@ -157,8 +157,8 @@ exports.bindingExportAndDownload = async (
 
   await serviceDownload(fileUrl, tmpFilePath);
 
-  await readWriteFileByLineWithProcess(tmpFilePath, filePath, (line, i) => {
-    if (i === 0) {
+  await readWriteFileByLineWithProcess(tmpFilePath, filePath, (line, index) => {
+    if (index === 0) {
       return line.slice(0, -1);
     }
     return line;
@@ -169,7 +169,7 @@ exports.bindingExportAndDownload = async (
   csv2xlsx(filePath);
 };
 
-exports.activityOrder = async (page, id = "2381", stageIndex = 2) => {
+exports.activityOrderExportAndDownload = async (page, id = "2381", stageIndex = 2) => {
   const [, res] = await Promise.all([
     page.goto(`https://edu.xlzhao.com/activity/export-order?id=${id}`),
     waitPathResponse(page, "/api/mechanismapi/teacher_stage/api_list"),
@@ -180,6 +180,8 @@ exports.activityOrder = async (page, id = "2381", stageIndex = 2) => {
   const stage = stageRes.data[stageIndex - 1].stage;
 
   const filePath = `activity_${id}_${stage}.csv`;
+  const tmpFilePath = `tmp_${filePath}`;
+  const cols = 64;
 
   const filterStages = await page.$$("#stageId>li");
   await filterStages[stageIndex].click();
@@ -210,21 +212,65 @@ exports.activityOrder = async (page, id = "2381", stageIndex = 2) => {
     }
   }
 
-  await serviceDownload(fileUrl, filePath);
+  await serviceDownload(fileUrl, tmpFilePath);
+
+  await readWriteFileByLineWithProcess(tmpFilePath, filePath, (line, index) => {
+    if (index === 0) {
+      return line.slice(0, -1);
+    }
+    let i = 0;
+    const len = line.length;
+    let cc = 0;
+    while (i < len && cc < cols) {
+      if (line[i] === ",") {
+        cc++;
+      }
+      i++;
+    }
+    if (cc < cols) {
+      return (
+        line +
+        Array(cols - cc - 1)
+          .fill(",")
+          .join("")
+      );
+    }
+    return line.slice(0, i - 1);
+  });
+
+  fs.unlinkSync(tmpFilePath);
 
   csv2xlsx(filePath);
 };
 
 exports.demo = async (page) => {
+  const cols = 64;
   await readWriteFileByLineWithProcess(
     "./test.csv",
-    "./test.csv",
-    (line, i) => {
-      if (i === 0) {
+    "./cp.csv",
+    (line, index) => {
+      if (index === 0) {
         return line.slice(0, -1);
       }
-      return line;
+      let i = 0;
+      const len = line.length;
+      let cc = 0;
+      while (i < len && cc < cols) {
+        if (line[i] === ",") {
+          cc++;
+        }
+        i++;
+      }
+      if (cc < cols) {
+        return (
+          line +
+          Array(cols - cc - 1)
+            .fill(",")
+            .join("")
+        );
+      }
+      return line.slice(0, i - 1);
     }
   );
-  // csv2xlsx("./binding_20200701_20221221.csv");
+  csv2xlsx("./cp.csv");
 };
