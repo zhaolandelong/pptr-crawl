@@ -1,12 +1,10 @@
-const fs = require("fs");
 const moment = require("moment");
 const {
   delay,
   clearAndInput,
   waitPathResponse,
   serviceDownload,
-  csv2xlsx,
-  readWriteFileByLineWithProcess,
+  convert2XlsxByLine,
 } = require("../../utils");
 
 exports.login = async (page) => {
@@ -22,7 +20,9 @@ exports.orderExportAndDownload = async (
   page,
   timeRange = [moment().format("YYYY-MM-DD"), moment().format("YYYY-MM-DD")]
 ) => {
-  const filePath = `order_${timeRange.join("_").replaceAll("-", "")}.csv`;
+  const filePath = `order_${moment(timeRange[0]).format("MMDD")}_${moment(
+    timeRange[1]
+  ).format("MMDD")}_${moment().format("MMDDHHmm")}.csv`;
   const typeLabels = [0];
 
   await Promise.all([
@@ -56,6 +56,7 @@ exports.orderExportAndDownload = async (
   await page.click(".fieldCon>label");
   const alertBtns = await page.$$(".couponAlert button");
   await alertBtns[1].click();
+  // await alertBtns[0].click(); // cancel
 
   // Download
   let canDownload = false;
@@ -79,7 +80,7 @@ exports.orderExportAndDownload = async (
 
   await serviceDownload(fileUrl, filePath);
 
-  csv2xlsx(filePath);
+  await convert2XlsxByLine(filePath);
 };
 
 // 调整订单
@@ -107,14 +108,16 @@ exports.orderTrim = async (page) => {
   await page.click(".fieldCon>label");
   const alertBtns = await page.$$(".couponAlert button");
   await alertBtns[1].click();
+  // await alertBtns[0].click(); // cancel
 };
 
 exports.bindingExportAndDownload = async (
   page,
   timeRange = ["2021-07-01", moment().format("YYYY-MM-DD")]
 ) => {
-  const filePath = `binding_${timeRange.join("_").replaceAll("-", "")}.csv`;
-  const tmpFilePath = `tmp_${filePath}`;
+  const filePath = `binding_${moment(timeRange[0]).format("MMDD")}_${moment(
+    timeRange[1]
+  ).format("MMDD")}_${moment().format("MMDDHHmm")}.csv`;
   await Promise.all([
     page.goto("https://edu.xlzhao.com/nexus/binding-export"),
     waitPathResponse(page, "/api/mechanismapi/order/data/export/index/binDing"),
@@ -134,6 +137,7 @@ exports.bindingExportAndDownload = async (
   await page.click(".fieldCon>label");
   const alertBtns = await page.$$(".couponAlert button");
   await alertBtns[1].click();
+  // await alertBtns[0].click(); // cancel
 
   // Download
   let canDownload = false;
@@ -155,21 +159,16 @@ exports.bindingExportAndDownload = async (
     }
   }
 
-  await serviceDownload(fileUrl, tmpFilePath);
+  await serviceDownload(fileUrl, filePath);
 
-  await readWriteFileByLineWithProcess(tmpFilePath, filePath, (line, index) => {
-    if (index === 0) {
-      return line.slice(0, -1);
-    }
-    return line;
-  });
-
-  fs.unlinkSync(tmpFilePath);
-
-  csv2xlsx(filePath);
+  await convert2XlsxByLine(filePath);
 };
 
-exports.activityOrderExportAndDownload = async (page, id = "2381", stageIndex = 2) => {
+exports.activityOrderExportAndDownload = async (
+  page,
+  id = "2381",
+  stageIndex = 2
+) => {
   const [, res] = await Promise.all([
     page.goto(`https://edu.xlzhao.com/activity/export-order?id=${id}`),
     waitPathResponse(page, "/api/mechanismapi/teacher_stage/api_list"),
@@ -179,9 +178,7 @@ exports.activityOrderExportAndDownload = async (page, id = "2381", stageIndex = 
   const stageRes = await res.json();
   const stage = stageRes.data[stageIndex - 1].stage;
 
-  const filePath = `activity_${id}_${stage}.csv`;
-  const tmpFilePath = `tmp_${filePath}`;
-  const cols = 64;
+  const filePath = `activity_${id}_${stage}_${moment().format("MMDDHHmm")}.csv`;
 
   const filterStages = await page.$$("#stageId>li");
   await filterStages[stageIndex].click();
@@ -191,6 +188,7 @@ exports.activityOrderExportAndDownload = async (page, id = "2381", stageIndex = 
   await page.click(".fieldCon>label");
   const alertBtns = await page.$$(".couponAlert button");
   await alertBtns[1].click();
+  // await alertBtns[0].click(); // cancel
 
   // Download
   let canDownload = false;
@@ -212,65 +210,15 @@ exports.activityOrderExportAndDownload = async (page, id = "2381", stageIndex = 
     }
   }
 
-  await serviceDownload(fileUrl, tmpFilePath);
+  await serviceDownload(fileUrl, filePath);
 
-  await readWriteFileByLineWithProcess(tmpFilePath, filePath, (line, index) => {
-    if (index === 0) {
-      return line.slice(0, -1);
-    }
-    let i = 0;
-    const len = line.length;
-    let cc = 0;
-    while (i < len && cc < cols) {
-      if (line[i] === ",") {
-        cc++;
-      }
-      i++;
-    }
-    if (cc < cols) {
-      return (
-        line +
-        Array(cols - cc - 1)
-          .fill(",")
-          .join("")
-      );
-    }
-    return line.slice(0, i - 1);
-  });
-
-  fs.unlinkSync(tmpFilePath);
-
-  csv2xlsx(filePath);
+  await convert2XlsxByLine(filePath);
 };
 
 exports.demo = async (page) => {
+  const tmpFilePath = "tmp_activity_2391_18.csv";
+  const filePath = "activity_2391_18.csv";
   const cols = 64;
-  await readWriteFileByLineWithProcess(
-    "./test.csv",
-    "./cp.csv",
-    (line, index) => {
-      if (index === 0) {
-        return line.slice(0, -1);
-      }
-      let i = 0;
-      const len = line.length;
-      let cc = 0;
-      while (i < len && cc < cols) {
-        if (line[i] === ",") {
-          cc++;
-        }
-        i++;
-      }
-      if (cc < cols) {
-        return (
-          line +
-          Array(cols - cc - 1)
-            .fill(",")
-            .join("")
-        );
-      }
-      return line.slice(0, i - 1);
-    }
-  );
-  csv2xlsx("./cp.csv");
+
+  await convert2XlsxByLine(filePath);
 };

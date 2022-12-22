@@ -1,9 +1,8 @@
 const fs = require("fs");
-const os = require("os");
 const rl = require("readline");
 const http = require("http");
 const https = require("https");
-const { convertCsvToXlsx } = require("@aternus/csv-to-xlsx");
+const xlsx = require("node-xlsx").default;
 
 exports.waitClickSelector = async (page, selector) => {
   await page.waitForSelector(selector);
@@ -37,7 +36,7 @@ exports.serviceDownload = (url, dist) => {
   return new Promise((rev, rej) => {
     service
       .get(url, (res) => {
-        const file = fs.createWriteStream(dist, "utf-8");
+        const file = fs.createWriteStream(dist);
         // Write data into local file
         res.pipe(file);
         // Close the file
@@ -55,28 +54,37 @@ exports.serviceDownload = (url, dist) => {
   });
 };
 
-exports.csv2xlsx = (source, dist) => {
-  let _dist = dist;
-  if (typeof _dist === "undefined") {
-    _dist = source.replace(".csv", ".xlsx");
-  }
-  convertCsvToXlsx(source, _dist);
-};
-
-exports.readWriteFileByLineWithProcess = (readName, writeName, callback) =>
+exports.convert2XlsxByLine = (
+  readName,
+  writeName = readName.replace(/\.\w+$/, ".xlsx"),
+  callback = (l) => l,
+  shouldTrim = true
+) =>
   new Promise((rev) => {
     const readStream = fs.createReadStream(readName);
     const writeStream = fs.createWriteStream(writeName);
     const readLine = rl.createInterface({
       input: readStream,
     });
+    const data = [];
     let i = 0;
     readLine.on("line", (line) => {
-      const rs = callback(line, i);
+      let rs;
+      if (shouldTrim) {
+        rs = callback(
+          line.replace(/(,\s*)|(\s*,)/g, ",").replace(/(^\s*)|(\s*$)/g, ""),
+          i
+        );
+      } else {
+        rs = callback(line, i);
+      }
       i += 1;
-      writeStream.write(rs + os.EOL);
+      data.push(rs.split(","));
     });
     readLine.on("close", function (line) {
+      writeStream.write(xlsx.build([{ data }]));
+      readStream.close();
+      writeStream.close();
       rev(1);
     });
   });

@@ -5,6 +5,7 @@ const {
   orderExportAndDownload,
   activityOrderExportAndDownload,
   bindingExportAndDownload,
+  demo,
 } = require("./utils");
 
 (async () => {
@@ -19,10 +20,11 @@ const {
   const page = (await browser.pages())[0];
   console.time("Total");
 
-  await orderExportAndDownload(page, ["2022-12-06", "2022-12-19"]);
-  await activityOrderExportAndDownload(page, "2381", 2);
+  // await orderExportAndDownload(page, ["2022-12-06", "2022-12-19"]);
+  await activityOrderExportAndDownload(page, "2391", 2);
   await bindingExportAndDownload(page);
 
+  // await demo(page);
   console.timeEnd("Total");
   await browser.disconnect();
 })();
