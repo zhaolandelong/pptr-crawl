@@ -215,6 +215,57 @@ exports.activityOrderExportAndDownload = async (
   await convert2XlsxByLine(filePath);
 };
 
+exports.agentExportAndDownload = async (
+  page,
+  timeRange = ["2021-07-01", moment().format("YYYY-MM-DD")]
+) => {
+  const filePath = `agent_${moment(timeRange[0]).format("MMDD")}_${moment(
+    timeRange[1]
+  ).format("MMDD")}_${moment().format("MMDDHHmm")}.csv`;
+  await Promise.all([
+    page.goto("https://edu.xlzhao.com/agent/agent-export"),
+    waitPathResponse(page, "/api/mechanismapi/mechanism_agent_config/api_list"),
+    waitPathResponse(
+      page,
+      "/api/mechanismapi/order/data/export/index/mechanismAgent"
+    ),
+  ]);
+
+  // 绑定时间
+  const timeInputs = await page.$$(".el-range-input");
+  await timeInputs[0].focus();
+  await page.keyboard.type(timeRange[0]);
+  await timeInputs[1].focus();
+  await page.keyboard.type(timeRange[1]);
+  await page.keyboard.press("Enter");
+  await delay(500);
+  await page.click(".exportBtn");
+
+  // Download
+  let canDownload = false;
+  const pageBtns = await page.$$(".pagination_page");
+
+  let fileUrl;
+  while (!canDownload) {
+    await pageBtns[3].click();
+    await delay(2000);
+    await pageBtns[2].click();
+    const res = await waitPathResponse(
+      page,
+      "/api/mechanismapi/order/data/export/index/mechanismAgent"
+    );
+    const data = await res.json();
+    if (data.data.data[0].status === 1) {
+      canDownload = true;
+      fileUrl = data.data.data[0].file_url;
+    }
+  }
+
+  await serviceDownload(fileUrl, filePath);
+
+  await convert2XlsxByLine(filePath);
+};
+
 exports.demo = async (page) => {
   const tmpFilePath = "tmp_activity_2391_18.csv";
   const filePath = "activity_2391_18.csv";

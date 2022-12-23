@@ -2,10 +2,11 @@ const puppeteer = require("puppeteer-core");
 const { browserWSEndpoint } = require("../../tmp.json");
 const { delay, clearAndInput, waitClickSelector } = require("../../utils");
 const {
+  demo,
   orderExportAndDownload,
   activityOrderExportAndDownload,
   bindingExportAndDownload,
-  demo,
+  agentExportAndDownload,
 } = require("./utils");
 
 (async () => {
@@ -23,6 +24,7 @@ const {
   // await orderExportAndDownload(page, ["2022-12-06", "2022-12-19"]);
   await activityOrderExportAndDownload(page, "2391", 2);
   await bindingExportAndDownload(page);
+  await agentExportAndDownload(page);
 
   // await demo(page);
   console.timeEnd("Total");

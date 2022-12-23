@@ -1,5 +1,11 @@
 # 学两招后台 - 壹到拾
 
+## Usage
+1. `node start.js &`
+2. `cd packages xueliangzhao`
+3. `node main.js`
+4. `https://edu.xlzhao.com/new-login/login`
+
 ## 业务
 - 订单数据 - 订单导出、调整订单
 - 绑定查询 - 导出绑定（2021.7.1 起）
