@@ -270,7 +270,12 @@ exports.agentExportAndDownload = async (
   await timeInputs[1].focus();
   await page.keyboard.type(timeRange[1]);
   await page.keyboard.press("Enter");
-  await delay(500);
+  await delay(200);
+  // 未冻结
+  const lis = await page.$$(".publicScreenLi");
+  const statLabels = await lis[2].$$("li");
+  await statLabels[1].click();
+  await delay(200);
   await page.click(".exportBtn");
 
   // Download
@@ -297,12 +302,15 @@ exports.agentExportAndDownload = async (
 
   await convert2XlsxByLine(filePath, {
     sheetName: filePath.slice(0, -13),
-    callback: (arr) => {
+    callback: (arr, i) => {
       if (arr[15] === "冻结") {
         return null;
       }
       arr.splice(5, 2);
       arr.splice(8, 4);
+      if (i > 0) {
+        arr[8] = moment(arr[8]).subtract(43, "s").toDate();
+      }
       return arr;
     },
   });
