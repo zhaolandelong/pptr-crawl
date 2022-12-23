@@ -134,7 +134,10 @@ exports.bindingExportAndDownload = async (
   // 全部
   await page.click(".exportBtn>button");
   await page.waitForSelector(".couponAlert");
-  await page.click(".fieldCon>label");
+  const labels = await page.$$(".fieldCon label");
+  await labels[0].click();
+  await labels[6].click();
+  await labels[12].click();
   const alertBtns = await page.$$(".couponAlert button");
   await alertBtns[1].click();
   // await alertBtns[0].click(); // cancel
@@ -161,7 +164,15 @@ exports.bindingExportAndDownload = async (
 
   await serviceDownload(fileUrl, filePath);
 
-  await convert2XlsxByLine(filePath);
+  await convert2XlsxByLine(filePath, {
+    sheetName: filePath.slice(0, -13),
+    callback: (arr, i) => {
+      if (i > 0) {
+        arr[10] = moment(arr[10]).subtract(43, "s").toDate();
+      }
+      return arr;
+    },
+  });
 };
 
 exports.activityOrderExportAndDownload = async (
@@ -278,17 +289,15 @@ exports.agentExportAndDownload = async (
 
 exports.demo = async (page) => {
   const tmpFilePath = "tmp_activity_2391_18.csv";
-  const filePath = "agent_0701_1223_12231017.csv";
+  const filePath = "binding_0701_1223_12232043.csv";
   const cols = 64;
 
   await convert2XlsxByLine(filePath, {
     sheetName: filePath.slice(0, -13),
-    callback: (arr) => {
-      if (arr[15] === "冻结") {
-        return null;
+    callback: (arr, i) => {
+      if (i > 0) {
+        arr[10] = moment(arr[10]).subtract(43, "s").toDate();
       }
-      arr.splice(5, 2);
-      arr.splice(8, 4);
       return arr;
     },
   });
