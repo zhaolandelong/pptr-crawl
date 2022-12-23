@@ -118,6 +118,8 @@ exports.bindingExportAndDownload = async (
   const filePath = `binding_${moment(timeRange[0]).format("MMDD")}_${moment(
     timeRange[1]
   ).format("MMDD")}_${moment().format("MMDDHHmm")}.csv`;
+  const headLabels = [0, 6, 12];
+
   await Promise.all([
     page.goto("https://edu.xlzhao.com/nexus/binding-export"),
     waitPathResponse(page, "/api/mechanismapi/order/data/export/index/binDing"),
@@ -134,10 +136,13 @@ exports.bindingExportAndDownload = async (
   // 全部
   await page.click(".exportBtn>button");
   await page.waitForSelector(".couponAlert");
+
   const labels = await page.$$(".fieldCon label");
-  await labels[0].click();
-  await labels[6].click();
-  await labels[12].click();
+
+  for (let i = 0; i < headLabels.length; i++) {
+    await labels[headLabels[i]].click();
+  }
+
   const alertBtns = await page.$$(".couponAlert button");
   await alertBtns[1].click();
   // await alertBtns[0].click(); // cancel
@@ -180,6 +185,8 @@ exports.activityOrderExportAndDownload = async (
   id = "2381",
   stageIndex = 2
 ) => {
+  const headLabels = [0, 8, 9, 12, 13, 14, 22, 23, 24, 25, 26, 27, 28, 29];
+
   const [, res] = await Promise.all([
     page.goto(`https://edu.xlzhao.com/activity/export-order?id=${id}`),
     waitPathResponse(page, "/api/mechanismapi/teacher_stage/api_list"),
@@ -196,7 +203,13 @@ exports.activityOrderExportAndDownload = async (
 
   await page.click(".exportBtn>button");
   await page.waitForSelector(".couponAlert");
-  await page.click(".fieldCon>label");
+
+  const labels = await page.$$(".fieldCon label");
+
+  for (let i = 0; i < headLabels.length; i++) {
+    await labels[headLabels[i]].click();
+  }
+
   const alertBtns = await page.$$(".couponAlert button");
   await alertBtns[1].click();
   // await alertBtns[0].click(); // cancel
@@ -223,7 +236,15 @@ exports.activityOrderExportAndDownload = async (
 
   await serviceDownload(fileUrl, filePath);
 
-  await convert2XlsxByLine(filePath);
+  await convert2XlsxByLine(filePath, {
+    sheetName: filePath.slice(0, -13),
+    callback: (arr, i) => {
+      if (i > 0) {
+        arr[0] = moment(arr[0]).subtract(43, "s").toDate();
+      }
+      return arr;
+    },
+  });
 };
 
 exports.agentExportAndDownload = async (
@@ -289,14 +310,14 @@ exports.agentExportAndDownload = async (
 
 exports.demo = async (page) => {
   const tmpFilePath = "tmp_activity_2391_18.csv";
-  const filePath = "binding_0701_1223_12232043.csv";
+  const filePath = "activity_2391_18_12232204.csv";
   const cols = 64;
 
   await convert2XlsxByLine(filePath, {
     sheetName: filePath.slice(0, -13),
     callback: (arr, i) => {
       if (i > 0) {
-        arr[10] = moment(arr[10]).subtract(43, "s").toDate();
+        arr[0] = moment(arr[0]).subtract(43, "s").toDate();
       }
       return arr;
     },

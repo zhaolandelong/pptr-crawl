@@ -54,7 +54,7 @@ exports.serviceDownload = (url, dist) => {
   });
 };
 
-exports.convert2XlsxByLine = (readName, options) => {
+exports.convert2XlsxByLine = (readName, options = {}) => {
   const {
     writeName = readName.replace(/\.\w+$/, ".xlsx"),
     callback,
