@@ -263,13 +263,33 @@ exports.agentExportAndDownload = async (
 
   await serviceDownload(fileUrl, filePath);
 
-  await convert2XlsxByLine(filePath);
+  await convert2XlsxByLine(filePath, {
+    sheetName: filePath.slice(0, -13),
+    callback: (arr) => {
+      if (arr[15] === "冻结") {
+        return null;
+      }
+      arr.splice(5, 2);
+      arr.splice(8, 4);
+      return arr;
+    },
+  });
 };
 
 exports.demo = async (page) => {
   const tmpFilePath = "tmp_activity_2391_18.csv";
-  const filePath = "activity_2391_18.csv";
+  const filePath = "agent_0701_1223_12231017.csv";
   const cols = 64;
 
-  await convert2XlsxByLine(filePath);
+  await convert2XlsxByLine(filePath, {
+    sheetName: filePath.slice(0, -13),
+    callback: (arr) => {
+      if (arr[15] === "冻结") {
+        return null;
+      }
+      arr.splice(5, 2);
+      arr.splice(8, 4);
+      return arr;
+    },
+  });
 };
