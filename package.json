@@ -10,7 +10,8 @@
     "node-fetch": "^3.2.4",
     "node-xlsx": "^0.21.0",
     "puppeteer-core": "^14.1.1",
-    "qs": "^6.10.3"
+    "qs": "^6.10.3",
+    "xlsx": "^0.18.5"
   },
   "scripts": {
     "start": "node start.js",
