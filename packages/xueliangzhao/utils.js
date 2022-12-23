@@ -5,6 +5,7 @@ const {
   waitPathResponse,
   serviceDownload,
   convert2XlsxByLine,
+  composeXlsx2Sheets,
 } = require("../../utils");
 
 exports.login = async (page) => {
@@ -20,7 +21,7 @@ exports.orderExportAndDownload = async (
   page,
   timeRange = [moment().format("YYYY-MM-DD"), moment().format("YYYY-MM-DD")]
 ) => {
-  const filePath = `order_${moment(timeRange[0]).format("MMDD")}_${moment(
+  const downloadPath = `order_${moment(timeRange[0]).format("MMDD")}_${moment(
     timeRange[1]
   ).format("MMDD")}_${moment().format("MMDDHHmm")}.csv`;
   const typeLabels = [0];
@@ -78,9 +79,9 @@ exports.orderExportAndDownload = async (
     }
   }
 
-  await serviceDownload(fileUrl, filePath);
+  await serviceDownload(fileUrl, downloadPath);
 
-  await convert2XlsxByLine(filePath);
+  await convert2XlsxByLine(downloadPath);
 };
 
 // 调整订单
@@ -111,13 +112,13 @@ exports.orderTrim = async (page) => {
   // await alertBtns[0].click(); // cancel
 };
 
-exports.bindingExportAndDownload = async (
-  page,
-  timeRange = ["2021-07-01", moment().format("YYYY-MM-DD")]
-) => {
-  const filePath = `binding_${moment(timeRange[0]).format("MMDD")}_${moment(
-    timeRange[1]
-  ).format("MMDD")}_${moment().format("MMDDHHmm")}.csv`;
+exports.bindingExportAndDownload = async (page, options = {}) => {
+  const {
+    downloadPath = `binding_${moment().format("MMDDHHmm")}.csv`,
+    xlsxPath = downloadPath.replace(/\.\w+$/, ".xlsx"),
+    timeRange = ["2021-07-01", moment().format("YYYY-MM-DD")],
+  } = options;
+
   const headLabels = [0, 6, 12];
 
   await Promise.all([
@@ -167,10 +168,13 @@ exports.bindingExportAndDownload = async (
     }
   }
 
-  await serviceDownload(fileUrl, filePath);
+  await serviceDownload(fileUrl, downloadPath);
 
-  await convert2XlsxByLine(filePath, {
-    sheetName: filePath.slice(0, -13),
+  await convert2XlsxByLine(downloadPath, {
+    writeName: xlsxPath,
+    sheetName: `binding_${moment(timeRange[0]).format("MMDD")}_${moment(
+      timeRange[1]
+    ).format("MMDD")}`,
     callback: (arr, i) => {
       if (i > 0) {
         arr[10] = moment(arr[10]).subtract(43, "s").toDate();
@@ -180,11 +184,13 @@ exports.bindingExportAndDownload = async (
   });
 };
 
-exports.activityOrderExportAndDownload = async (
-  page,
-  id = "2381",
-  stageIndex = 2
-) => {
+exports.activityOrderExportAndDownload = async (page, options = {}) => {
+  const {
+    id = "2381",
+    stageIndex = 2,
+    downloadPath = `activity_${moment().format("MMDDHHmm")}.csv`,
+    xlsxPath = downloadPath.replace(/\.\w+$/, ".xlsx"),
+  } = options;
   const headLabels = [0, 8, 9, 12, 13, 14, 22, 23, 24, 25, 26, 27, 28, 29];
 
   const [, res] = await Promise.all([
@@ -195,8 +201,6 @@ exports.activityOrderExportAndDownload = async (
 
   const stageRes = await res.json();
   const stage = stageRes.data[stageIndex - 1].stage;
-
-  const filePath = `activity_${id}_${stage}_${moment().format("MMDDHHmm")}.csv`;
 
   const filterStages = await page.$$("#stageId>li");
   await filterStages[stageIndex].click();
@@ -234,10 +238,11 @@ exports.activityOrderExportAndDownload = async (
     }
   }
 
-  await serviceDownload(fileUrl, filePath);
+  await serviceDownload(fileUrl, downloadPath);
 
-  await convert2XlsxByLine(filePath, {
-    sheetName: filePath.slice(0, -13),
+  await convert2XlsxByLine(downloadPath, {
+    writeName: xlsxPath,
+    sheetName: `activity_${id}_${stage}`,
     callback: (arr, i) => {
       if (i > 0) {
         arr[0] = moment(arr[0]).subtract(43, "s").toDate();
@@ -247,13 +252,12 @@ exports.activityOrderExportAndDownload = async (
   });
 };
 
-exports.agentExportAndDownload = async (
-  page,
-  timeRange = ["2021-07-01", moment().format("YYYY-MM-DD")]
-) => {
-  const filePath = `agent_${moment(timeRange[0]).format("MMDD")}_${moment(
-    timeRange[1]
-  ).format("MMDD")}_${moment().format("MMDDHHmm")}.csv`;
+exports.agentExportAndDownload = async (page, options = {}) => {
+  const {
+    downloadPath = `agent_${moment().format("MMDDHHmm")}.csv`,
+    xlsxPath = downloadPath.replace(/\.\w+$/, ".xlsx"),
+    timeRange = ["2021-07-01", moment().format("YYYY-MM-DD")],
+  } = options;
   await Promise.all([
     page.goto("https://edu.xlzhao.com/agent/agent-export"),
     waitPathResponse(page, "/api/mechanismapi/mechanism_agent_config/api_list"),
@@ -298,10 +302,13 @@ exports.agentExportAndDownload = async (
     }
   }
 
-  await serviceDownload(fileUrl, filePath);
+  await serviceDownload(fileUrl, downloadPath);
 
-  await convert2XlsxByLine(filePath, {
-    sheetName: filePath.slice(0, -13),
+  await convert2XlsxByLine(downloadPath, {
+    writeName: xlsxPath,
+    sheetName: `agent_${moment(timeRange[0]).format("MMDD")}_${moment(
+      timeRange[1]
+    ).format("MMDD")}`,
     callback: (arr, i) => {
       if (arr[15] === "冻结") {
         return null;
@@ -317,17 +324,8 @@ exports.agentExportAndDownload = async (
 };
 
 exports.demo = async (page) => {
-  const tmpFilePath = "tmp_activity_2391_18.csv";
-  const filePath = "activity_2391_18_12232204.csv";
-  const cols = 64;
-
-  await convert2XlsxByLine(filePath, {
-    sheetName: filePath.slice(0, -13),
-    callback: (arr, i) => {
-      if (i > 0) {
-        arr[0] = moment(arr[0]).subtract(43, "s").toDate();
-      }
-      return arr;
-    },
-  });
+  composeXlsx2Sheets(
+    ["activity_12232317.xlsx", "agent_12232318.xlsx", "binding_12232317.xlsx"],
+    "test.xlsx"
+  );
 };

@@ -93,3 +93,8 @@ exports.convert2XlsxByLine = (readName, options = {}) => {
     });
   });
 };
+
+exports.composeXlsx2Sheets = (sorcePaths, dist) =>
+  fs
+    .createWriteStream(dist)
+    .write(xlsx.build(sorcePaths.map((p) => xlsx.parse(p)[0])));
