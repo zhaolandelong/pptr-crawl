@@ -54,16 +54,11 @@ exports.serviceDownload = (url, dist) => {
   });
 };
 
-exports.convert2XlsxByLine = (readName, options = {}) => {
-  const {
-    writeName = readName.replace(/\.\w+$/, ".xlsx"),
-    callback,
-    sheetName = "Sheet1",
-  } = options;
+exports.convert2XlsxBuffer = (readName, options = {}) => {
+  const { callback } = options;
 
   return new Promise((rev) => {
     const readStream = fs.createReadStream(readName);
-    const writeStream = fs.createWriteStream(writeName);
     const readLine = rl.createInterface({
       input: readStream,
     });
@@ -86,15 +81,11 @@ exports.convert2XlsxByLine = (readName, options = {}) => {
       i += 1;
     });
     readLine.on("close", function () {
-      writeStream.write(xlsx.build([{ name: sheetName, data }]));
       readStream.close();
-      writeStream.close();
-      rev(1);
+      rev(data);
     });
   });
 };
 
-exports.composeXlsx2Sheets = (sorcePaths, dist) =>
-  fs
-    .createWriteStream(dist)
-    .write(xlsx.build(sorcePaths.map((p) => xlsx.parse(p)[0])));
+exports.buffer2Xlsx = (dist, datas) =>
+  fs.createWriteStream(dist).write(xlsx.build(datas));

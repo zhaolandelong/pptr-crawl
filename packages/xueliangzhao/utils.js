@@ -4,8 +4,7 @@ const {
   clearAndInput,
   waitPathResponse,
   serviceDownload,
-  convert2XlsxByLine,
-  composeXlsx2Sheets,
+  convert2XlsxBuffer,
 } = require("../../utils");
 
 exports.login = async (page) => {
@@ -81,7 +80,19 @@ exports.orderExportAndDownload = async (
 
   await serviceDownload(fileUrl, downloadPath);
 
-  await convert2XlsxByLine(downloadPath);
+  return {
+    name: `order_${moment(timeRange[0]).format("MMDD")}_${moment(
+      timeRange[1]
+    ).format("MMDD")}`,
+    data: await convert2XlsxBuffer(downloadPath, {
+      callback: (arr, i) => {
+        // if (i > 0) {
+        //   arr[10] = moment(arr[10]).subtract(43, "s").toDate();
+        // }
+        return arr;
+      },
+    }),
+  };
 };
 
 // 调整订单
@@ -170,18 +181,19 @@ exports.bindingExportAndDownload = async (page, options = {}) => {
 
   await serviceDownload(fileUrl, downloadPath);
 
-  await convert2XlsxByLine(downloadPath, {
-    writeName: xlsxPath,
-    sheetName: `binding_${moment(timeRange[0]).format("MMDD")}_${moment(
+  return {
+    name: `binding_${moment(timeRange[0]).format("MMDD")}_${moment(
       timeRange[1]
     ).format("MMDD")}`,
-    callback: (arr, i) => {
-      if (i > 0) {
-        arr[10] = moment(arr[10]).subtract(43, "s").toDate();
-      }
-      return arr;
-    },
-  });
+    data: await convert2XlsxBuffer(downloadPath, {
+      callback: (arr, i) => {
+        if (i > 0) {
+          arr[10] = moment(arr[10]).subtract(43, "s").toDate();
+        }
+        return arr;
+      },
+    }),
+  };
 };
 
 exports.activityOrderExportAndDownload = async (page, options = {}) => {
@@ -240,16 +252,17 @@ exports.activityOrderExportAndDownload = async (page, options = {}) => {
 
   await serviceDownload(fileUrl, downloadPath);
 
-  await convert2XlsxByLine(downloadPath, {
-    writeName: xlsxPath,
-    sheetName: `activity_${id}_${stage}`,
-    callback: (arr, i) => {
-      if (i > 0) {
-        arr[0] = moment(arr[0]).subtract(43, "s").toDate();
-      }
-      return arr;
-    },
-  });
+  return {
+    name: `activity_${id}_${stage}`,
+    data: await convert2XlsxBuffer(downloadPath, {
+      callback: (arr, i) => {
+        if (i > 0) {
+          arr[0] = moment(arr[0]).subtract(43, "s").toDate();
+        }
+        return arr;
+      },
+    }),
+  };
 };
 
 exports.agentExportAndDownload = async (page, options = {}) => {
@@ -304,28 +317,24 @@ exports.agentExportAndDownload = async (page, options = {}) => {
 
   await serviceDownload(fileUrl, downloadPath);
 
-  await convert2XlsxByLine(downloadPath, {
-    writeName: xlsxPath,
-    sheetName: `agent_${moment(timeRange[0]).format("MMDD")}_${moment(
+  return {
+    name: `agent_${moment(timeRange[0]).format("MMDD")}_${moment(
       timeRange[1]
     ).format("MMDD")}`,
-    callback: (arr, i) => {
-      if (arr[15] === "冻结") {
-        return null;
-      }
-      arr.splice(5, 2);
-      arr.splice(8, 4);
-      if (i > 0) {
-        arr[8] = moment(arr[8]).subtract(43, "s").toDate();
-      }
-      return arr;
-    },
-  });
+    data: await convert2XlsxBuffer(downloadPath, {
+      callback: (arr, i) => {
+        if (arr[15] === "冻结") {
+          return null;
+        }
+        arr.splice(5, 2);
+        arr.splice(8, 4);
+        if (i > 0) {
+          arr[8] = moment(arr[8]).subtract(43, "s").toDate();
+        }
+        return arr;
+      },
+    }),
+  };
 };
 
-exports.demo = async (page) => {
-  composeXlsx2Sheets(
-    ["activity_12232317.xlsx", "agent_12232318.xlsx", "binding_12232317.xlsx"],
-    "test.xlsx"
-  );
-};
+exports.demo = async (page) => {};

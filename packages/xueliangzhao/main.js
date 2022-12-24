@@ -1,12 +1,9 @@
 const puppeteer = require("puppeteer-core");
 const moment = require("moment");
+const fs = require("fs");
+const xlsx = require("node-xlsx").default;
 const { browserWSEndpoint } = require("../../tmp.json");
-const {
-  delay,
-  clearAndInput,
-  waitClickSelector,
-  composeXlsx2Sheets,
-} = require("../../utils");
+const { buffer2Xlsx } = require("../../utils");
 const {
   demo,
   orderExportAndDownload,
@@ -27,23 +24,19 @@ const {
   const page = (await browser.pages())[0];
   console.time("Total");
 
-  const suffix = `${moment().format("MMDDHHmm")}.xlsx`;
-  const paths = [`activity_${suffix}`, `binding_${suffix}`, `agent_${suffix}`];
-
   // await orderExportAndDownload(page, ["2022-12-06", "2022-12-19"]);
-  await activityOrderExportAndDownload(page, {
+  const activityData = await activityOrderExportAndDownload(page, {
     id: "2391",
     stageIndex: 2,
-    xlsxPath: paths[0],
   });
-  await bindingExportAndDownload(page, {
-    xlsxPath: paths[1],
-  });
-  await agentExportAndDownload(page, {
-    xlsxPath: paths[2],
-  });
+  const bindingData = await bindingExportAndDownload(page, {});
+  const agentData = await agentExportAndDownload(page, {});
 
-  // composeXlsx2Sheets(paths, `summary_${suffix}`);
+  buffer2Xlsx(`summary_${moment().format("MMDDHHmm")}.xlsx`, [
+    activityData,
+    bindingData,
+    agentData,
+  ]);
 
   // await demo(page);
   console.timeEnd("Total");
