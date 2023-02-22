@@ -138,13 +138,14 @@ exports.bindingExportAndDownload = async (page, options = {}) => {
   ]);
 
   // 绑定时间
-  const timeInputs = await page.$$(".el-range-input");
+  const timeInputs = await page.$$(".ivu-input-with-suffix");
   await timeInputs[0].focus();
-  await page.keyboard.type(timeRange[0]);
-  await timeInputs[1].focus();
-  await page.keyboard.type(timeRange[1]);
+  await page.keyboard.type(`${timeRange[0]} - ${timeRange[1]}`);
   await page.keyboard.press("Enter");
-
+  
+  const radios = await page.$$(".el-radio__original");
+  await radios[0].click();
+  
   // 全部
   await page.click(".exportBtn>button");
   await page.waitForSelector(".couponAlert");
@@ -281,11 +282,9 @@ exports.agentExportAndDownload = async (page, options = {}) => {
   ]);
 
   // 绑定时间
-  const timeInputs = await page.$$(".el-range-input");
+  const timeInputs = await page.$$(".ivu-input-with-suffix");
   await timeInputs[0].focus();
-  await page.keyboard.type(timeRange[0]);
-  await timeInputs[1].focus();
-  await page.keyboard.type(timeRange[1]);
+  await page.keyboard.type(`${timeRange[0]} - ${timeRange[1]}`);
   await page.keyboard.press("Enter");
   await delay(200);
   // 未冻结
